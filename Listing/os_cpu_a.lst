@@ -387,17 +387,17 @@ ARM Macro Assembler    Page 6
               00000000 
 Command Line: --debug --xref --diag_suppress=9931 --cpu=Cortex-M4.fp --apcs=int
 erwork --depend=..\output\os_cpu_a.d -o..\output\os_cpu_a.o -I"E:\粒子发生器\粒
-子发生器程序_线性+注射泵 +上报\粒子发生器测试程序\Progect\RTE" -IC:\Keil_v5\ARM
+子发生器程序_线性+注射泵 +上报 +序列\粒子发生器测试程序\Progect\RTE" -IC:\Keil_
 
 
 
 ARM Macro Assembler    Page 7 
 
 
-\PACK\ARM\CMSIS\4.2.0\CMSIS\Include -IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\1.
-0.8\Device\Include --predefine="__MICROLIB SETA 1" --predefine="__UVISION_VERSI
-ON SETA 514" --predefine="_RTE_ SETA 1" --predefine="STM32F40_41xxx SETA 1" --l
-ist=..\listing\os_cpu_a.lst ..\UcosII\Port\os_cpu_a.asm
+v5\ARM\PACK\ARM\CMSIS\4.2.0\CMSIS\Include -IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_
+DFP\1.0.8\Device\Include --predefine="__MICROLIB SETA 1" --predefine="__UVISION
+_VERSION SETA 514" --predefine="_RTE_ SETA 1" --predefine="STM32F40_41xxx SETA 
+1" --list=..\listing\os_cpu_a.lst ..\UcosII\Port\os_cpu_a.asm
 
 
 

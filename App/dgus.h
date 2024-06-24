@@ -344,6 +344,34 @@ typedef struct
 #define DATA_EXPORT								0x3//数据导出
 #define DATA_EXPORT_EN							0x4//导出使能
 #define DATA_EXPORT_PERCENRT					0x5//导出百分比
+
+#define LIST_PAGE								0x000E//序列发生页
+
+#define LIST_OUT1_TIME           0x00
+#define LIST_OUT2_TIME           0x01
+#define LIST_OUT3_TIME           0x02
+#define LIST_OUT4_TIME           0x03
+#define LIST_OUT5_TIME           0x04
+#define LIST_OUT6_TIME           0x05
+#define LIST_OUT7_TIME           0x06
+#define LIST_OUT8_TIME           0x07
+#define LIST_OUT9_TIME           0x08
+#define LIST_OUT10_TIME          0x09
+#define LIST1_SC_CONCENTRATION   0x0A
+#define LIST2_SC_CONCENTRATION   0x0B
+#define LIST3_SC_CONCENTRATION   0x0C
+#define LIST4_SC_CONCENTRATION   0x0D
+#define LIST5_SC_CONCENTRATION   0x0E
+#define LIST6_SC_CONCENTRATION   0x0F
+#define LIST7_SC_CONCENTRATION   0x10
+#define LIST8_SC_CONCENTRATION   0x11
+#define LIST9_SC_CONCENTRATION   0x12
+#define LIST10_SC_CONCENTRATION  0x13
+#define LIST_STATE               0x14
+#define LIST_DELETE       			 0x15
+#define LIST_FLUID_CONCENTRATION 0x16
+#define LIST_FLUID_FLOW          0x17
+#define LIST_AIR_FLOW_RATE_SET   0x18
 typedef struct
 {
 	short home_page[9];
@@ -361,6 +389,7 @@ typedef struct
 	unsigned char new_data;
 	//unsigned short motor_data;
 	short warning[11];
+	short data_list[30]; //序列页面
 	FileSive file;
 }MODEL_1006;
 

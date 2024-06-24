@@ -319,6 +319,12 @@ void Dugs(void *p_arg)
 			DugsCommandSend(DEMAND_PAGE<<4|i,model_1006.data_demand[i]);
 			OSTimeDlyHMSM(0,0,0,10);
 		}
+						/*******序列数据更新*********/
+		for(i=0;i<=LIST_AIR_FLOW_RATE_SET;i++)
+		{
+			DugsCommandSend(LIST_PAGE<<8|i,model_1006.data_list[i]);//序列地址占12位
+			OSTimeDlyHMSM(0,0,0,10);
+		}
 		///计算浓度
 		if(model_1006.status[SC_AIR_FLOW_RATE]!=0)
 			model_1006.status[SC_START_CONCENTRATION] = model_1006.start_product[FLUID_CONCENTRATION]*model_1006.status[FLUID_FLOW_STATUS]
@@ -357,6 +363,27 @@ void Dugs(void *p_arg)
 		OSTimeDlyHMSM(0,0,0,200);
 	}
 }
+uint8_t list_num = 10;   //总共10个序列
+static uint8_t list_outstate = 0;
+static float min_flag = 0;
+static uint8_t hour_flag = 0;
+//序列延时，最长100小时
+static void tmr1_callback(OS_TMR *ptmr,void *p_arg) 
+{
+	min_flag++;
+	if(min_flag>=60)
+	{
+		hour_flag++;
+		min_flag = 0;
+	}
+	if(hour_flag>100)
+	{
+		min_flag = 0;
+		hour_flag = 0;
+	}
+}
+static OS_TMR   * tmr1; // 序列发生使用的软件定时器
+static INT8U err;
 //执行操作
 void auto_hand_action(void *p_arg)
 {
@@ -368,11 +395,85 @@ void auto_hand_action(void *p_arg)
 	int flow_rate;
 //	u8 auto_injection_count;//自动清洗计数
 // 	char next_start_hourtime=0;//下次发生的时间（洗液时间）
+	u8 i = 0;
+	tmr1=OSTmrCreate(0,600,OS_TMR_OPT_PERIODIC,(OS_TMR_CALLBACK)tmr1_callback,0,(INT8U*)"tmr1",&err);//创建序列发生使用的软件定时器,100ms基点
 	RADIOTUBE_OFF;//关闭电磁阀
 	OSTimeDlyHMSM(0,0,2,0);//开机延时两秒等待配置参数
 	while(1)
 	{
+					//*****************************序列发生*************************************
+		if(model_1006.data_list[LIST_STATE]&0x08)//序列开始发生
+		{
+			if(list_outstate == 0) //无序列正在发生
+			{
+				if(model_1006.data_list[i])  //该序列有内容，通过保持时间判断
+				{
+								
+					if(model_1006.data_list[LIST_FLUID_CONCENTRATION+i]!=0)
+					{
+					FLUID_FLOW_B = model_1006.data_list[LIST_AIR_FLOW_RATE_SET]*model_1006.data_list[LIST1_SC_CONCENTRATION+i]/
+					(model_1006.data_list[LIST_FLUID_CONCENTRATION]*1000);//*model_1006.calibration[PUMP_CALIBRATION_FACTOR]
+					model_1006.data_list[LIST_FLUID_FLOW] = FLUID_FLOW_B* linearCalibration(FLUID_FLOW_B); 
+					}
+					ATOMIZER_ON;//雾化器上电
+					OSTimeDlyHMSM(0,0,2,0);
+					
+					flow_rate = model_1006.data_list[LIST_AIR_FLOW_RATE_SET]*6.4f*1000/5/model_1006.calibration[ACTUAL_FLOW_RATE];//20201010流量设定是增加校准比率 20201228增加斜率系数
+//					flow_rate = model_1006.data_list[LIST_AIR_FLOW_RATE_SET]*64000/5000;
+					alicat_init[1] = flow_rate/10000+0x30;
+					alicat_init[2] = flow_rate/1000%10+0x30;
+					alicat_init[3] = flow_rate/100%10+0x30;
+					alicat_init[4] = flow_rate/10%10+0x30;
+					alicat_init[5] = flow_rate%10+0x30;
+					comSendBuf(COM6, alicat_init, 9);//设气体流量
+					//************序列参数赋予开始发生参数 **********************************************************
+					model_1006.start_product[FLUID_CONCENTRATION] = model_1006.data_list[LIST_FLUID_CONCENTRATION];
+					model_1006.start_product[FLUID_FLOW] = model_1006.data_list[LIST_FLUID_FLOW];
+					model_1006.start_product[AIR_FLOW_RATE_SET] = model_1006.data_list[LIST_AIR_FLOW_RATE_SET];
+					model_1006.start_product[SC_CONCENTRATION] = model_1006.data_list[LIST1_SC_CONCENTRATION+i];
+					//*********************************************************************************************
+					LED1_OFF;
+					model_1006.start_product[START_PRODUCT_COMMEND] |= 0x02;//开始发生
+//					model_1006.start_product[START_PRODUCT_COMMEND] &= ~(0x08);//标志位清零
+					
+					model_1006.home_page[HOME_WORK_STATUS] = 8+i;//首页显示对应序列发生中
 
+					OSTimeDlyHMSM(0,0,0,200);
+					levi_2043e.command_status = 1;//强制改变指令状态等待状态刷新
+					list_outstate = 1;   //有序列发生
+					OSTmrStart(tmr1,&err); 	//开启定时器
+				}
+				else
+				{
+					i++; //进行下一序列
+				}
+			}
+			if((hour_flag+(min_flag/60.0f)) >= ((float)model_1006.data_list[i])/100.0f) //该序列保持时间到
+			{
+				i++;
+				list_outstate = 0;
+				hour_flag = 0;
+				min_flag =0;
+				OSTmrStop(tmr1,OS_TMR_OPT_NONE,0,&err);	 	
+			}
+			if(i>=10)
+			{
+				i = 0;
+				model_1006.data_list[LIST_STATE] &= ~(0x08);//标志位清零
+				model_1006.data_list[LIST_STATE] |= 0x10;//停止发生
+			}
+		}
+		if(model_1006.data_list[LIST_STATE]&0x10)//停止发生
+		{
+				model_1006.data_list[LIST_STATE] &= ~(0x08);//标志位清零
+				model_1006.data_list[LIST_STATE] &= ~(0x10);//标志位清零
+				model_1006.start_product[START_PRODUCT_COMMEND] |= 0x10;//停止发生
+				i = 0; //序列置0
+				list_outstate = 0; //发生状态设置空闲  
+				OSTmrStop(tmr1,OS_TMR_OPT_NONE,0,&err);//关闭定时器	 	
+				hour_flag = 0;  // 置零时间计数
+				min_flag =0;
+		}
 		//*****************************粒子发生*************************************
 		if(model_1006.start_product[START_PRODUCT_COMMEND]&0x08)//开始发生
 		{

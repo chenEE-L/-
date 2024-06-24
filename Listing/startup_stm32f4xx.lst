@@ -849,12 +849,12 @@ erwork --depend=..\output\startup_stm32f4xx.d -o..\output\startup_stm32f4xx.o -
 ARM Macro Assembler    Page 14 
 
 
-I"E:\粒子发生器\粒子发生器程序_线性+注射泵 +上报\粒子发生器测试程序\Progect\RTE
-" -IC:\Keil_v5\ARM\PACK\ARM\CMSIS\4.2.0\CMSIS\Include -IC:\Keil_v5\ARM\PACK\Kei
-l\STM32F4xx_DFP\1.0.8\Device\Include --predefine="__MICROLIB SETA 1" --predefin
-e="__UVISION_VERSION SETA 514" --predefine="_RTE_ SETA 1" --predefine="STM32F40
-_41xxx SETA 1" --list=..\listing\startup_stm32f4xx.lst ..\CMSIS\Core\startup_st
-m32f4xx.s
+I"E:\粒子发生器\粒子发生器程序_线性+注射泵 +上报 +序列\粒子发生器测试程序\Proge
+ct\RTE" -IC:\Keil_v5\ARM\PACK\ARM\CMSIS\4.2.0\CMSIS\Include -IC:\Keil_v5\ARM\PA
+CK\Keil\STM32F4xx_DFP\1.0.8\Device\Include --predefine="__MICROLIB SETA 1" --pr
+edefine="__UVISION_VERSION SETA 514" --predefine="_RTE_ SETA 1" --predefine="ST
+M32F40_41xxx SETA 1" --list=..\listing\startup_stm32f4xx.lst ..\CMSIS\Core\star
+tup_stm32f4xx.s
 
 
 

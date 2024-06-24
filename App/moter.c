@@ -674,7 +674,7 @@ static uint8_t MODS_WriteRegValue(uint16_t reg_addr, uint16_t reg_value)
 	switch (reg_addr)							/* 判断寄存器地址 */
 	{	
 		case SLAVE_REG_P02: //液体浓度
-			model_1006.start_product[FLUID_FLOW] = reg_value;
+			model_1006.start_product[FLUID_CONCENTRATION] = reg_value;
 			break;
 		
 		case SLAVE_REG_P03://气体流量

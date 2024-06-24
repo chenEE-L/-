@@ -218,6 +218,12 @@ void DealUsart1_Commend()
 			{
 				model_1006.data_demand[command_word[5]&0x0f] = (command_word[7]<<8)|command_word[8];
 			}
+						//****************接收序列数据************************
+			else if((command_code>>4)==LIST_PAGE) //地址在第一个字节后四位
+			{
+				model_1006.data_list[command_word[5]] = (command_word[7]<<8)|command_word[8]; //第二个字节均为分地址
+			}
+			//****************************************************
 			model_1006.new_data = 1;//接受到新的数据
 		}
 		else if(command_word[3]==0x81)
